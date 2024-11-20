@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dance Choreographer</title>
+    <style>
+        .stage {
+            width: 800px;
+            height: 500px;
+            border: 2px solid black;
+            margin: 20px auto;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+        
+        .dancer {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #ff6b6b;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .selected {
+            border: 3px solid blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="addDancer()">Add Dancer</button>
+        <button onclick="changePose('🧍')">Stand</button>
+        <button onclick="changePose('💃')">Dance</button>
+        <button onclick="changePose('🤸')">Jump</button>
+    </div>
+    
+    <div id="stage" class="stage"></div>
+
+    <script>
+        let dancers = [];
+        let selectedDancer = null;
+        
+        function addDancer() {
+            const dancer = document.createElement('div');
+            dancer.className = 'dancer';
+            dancer.innerHTML = '🧍';
+            
+            // Random position on stage
+            const x = Math.random() * 760; // stage width - dancer width
+            const y = Math.random() * 460; // stage height - dancer height
+            
+            dancer.style.left = x + 'px';
+            dancer.style.top = y + 'px';
+            
+            // Make dancer draggable
+            dancer.onmousedown = function(event) {
+                selectDancer(dancer);
+                dragDancer(dancer, event);
+            };
+            
+            // Add to stage
+            document.getElementById('stage').appendChild(dancer);
+            dancers.push(dancer);
+        }
+        
+        function selectDancer(dancer) {
+            // Deselect previously selected dancer
+            if (selectedDancer) {
+                selectedDancer.classList.remove('selected');
+            }
+            
+            // Select new dancer
+            selectedDancer = dancer;
+            dancer.classList.add('selected');
+        }
+        
+        function changePose(pose) {
+            if (selectedDancer) {
+                selectedDancer.innerHTML = pose;
+            }
+        }
+        
+        function dragDancer(dancer, event) {
+            event.preventDefault();
+            
+            const shiftX = event.clientX - dancer.getBoundingClientRect().left;
+            const shiftY = event.clientY - dancer.getBoundingClientRect().top;
+            
+            function moveAt(pageX, pageY) {
+                const stage = document.getElementById('stage');
+                const stageRect = stage.getBoundingClientRect();
+                
+                let newX = pageX - shiftX - stageRect.left;
+                let newY = pageY - shiftY - stageRect.top;
+                
+                // Keep dancer within stage bounds
+                newX = Math.max(0, Math.min(newX, stage.offsetWidth - dancer.offsetWidth));
+                newY = Math.max(0, Math.min(newY, stage.offsetHeight - dancer.offsetHeight));
+                
+                dancer.style.left = newX + 'px';
+                dancer.style.top = newY + 'px';
+            }
+            
+            function onMouseMove(event) {
+                moveAt(event.pageX, event.pageY);
+            }
+            
+            document.addEventListener('mousemove', onMouseMove);
+            
+            document.onmouseup = function() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.onmouseup = null;
+            };
+        }
+    </script>
+</body>
+</html>
